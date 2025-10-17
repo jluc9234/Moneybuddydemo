@@ -1,10 +1,16 @@
 import { GoogleGenAI } from "@google/genai";
 
 // API key is automatically available as process.env.API_KEY
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
+const API_KEY = process.env.API_KEY;
 
 export const generateSecurityTip = async (): Promise<string> => {
+  if (!API_KEY) {
+    console.warn("Gemini API key not set, using default tip");
+    return "Enable two-factor authentication (2FA) on your account for an extra layer of security.";
+  }
+
   try {
+    const ai = new GoogleGenAI({ apiKey: API_KEY });
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: 'Generate a security tip.',
