@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheckIcon } from './icons';
-import { supabase } from '../supabaseClient'; // Ensure this path is correct
+import { supabase } from '../supabaseClient';
 
 interface AuthProps {
   onLogin: () => void;
@@ -8,32 +7,25 @@ interface AuthProps {
 
 const Auth: React.FC<AuthProps> = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState(''); // Now empty by default
-  const [password, setPassword] = useState(''); // Now empty by default
+  const [email, setEmail] = useState(''); 
+  const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
     if (!email || !password) {
       alert('Please enter email and password');
       return;
     }
-
     setLoading(true);
-    
-    // Real Supabase Authentication
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-
     if (error) {
       alert(error.message);
       setLoading(false);
       return;
     }
-
-    if (data.user) {
-      onLogin();
-    }
+    if (data.user) onLogin();
   };
 
   const handleSignUp = async () => {
@@ -41,64 +33,57 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
       alert('Please enter email and password');
       return;
     }
-
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    if (error) {
-      alert(error.message);
-    } else {
-      alert('Check your email for the confirmation link!');
-    }
+    const { error } = await supabase.auth.signUp({ email, password });
+    if (error) alert(error.message);
+    else alert('Check your email for the confirmation link!');
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen text-white font-sans antialiased flex items-center justify-center p-4 animate-fade-in-down">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-blue-500 to-teal-400 flex items-center justify-center p-4">
       <div className="relative z-10 w-full max-w-md">
-        <div className="bg-gray-900/60 backdrop-blur-lg border border-lime-400/20 rounded-3xl shadow-2xl shadow-lime-500/10 p-12">
-          <div className="text-center mb-8">
-            <h1 className="text-5xl font-bold text-white tracking-wide">Money Buddy</h1>
-            <p className="text-gray-400 mt-2 text-lg">Your Production Wealth Manager</p>
-          </div>
+        <div className="bg-gray-900/60 backdrop-blur-lg border border-white/10 rounded-3xl shadow-2xl p-12 text-center">
+          
+          {/* RESTORING YOUR LOGO */}
+          <img 
+            src="/monkey.png" 
+            alt="Money Buddy Logo" 
+            className="w-32 h-32 mx-auto mb-6 object-contain" 
+          />
 
-          <div className="space-y-6">
-            <div>
-              <input
-                type="email"
-                placeholder="Email Address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-gray-800/50 border border-gray-700 rounded-xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-lime-500/50 transition-all"
-              />
-            </div>
-            <div>
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-gray-800/50 border border-gray-700 rounded-xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-lime-500/50 transition-all"
-              />
-            </div>
+          <h1 className="text-4xl font-bold text-white mb-2 font-sans">Money Buddy</h1>
+          <p className="text-gray-300 mb-8">Your Production Wealth Manager</p>
+
+          <div className="space-y-4">
+            <input
+              type="email"
+              placeholder="Email Address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-white/10 border border-white/20 rounded-xl px-5 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-lime-400"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-white/10 border border-white/20 rounded-xl px-5 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-lime-400"
+            />
 
             <button
               onClick={handleLogin}
               disabled={loading}
-              className="w-full bg-lime-500 hover:bg-lime-400 text-black font-bold py-4 rounded-xl shadow-lg shadow-lime-500/20 transition-all active:scale-95 disabled:opacity-50"
+              className="w-full bg-lime-500 hover:bg-lime-400 text-black font-bold py-3 rounded-xl transition-transform active:scale-95 disabled:opacity-50"
             >
-              {loading ? 'Authenticating...' : 'Sign In'}
+              {loading ? 'Signing In...' : 'Sign In'}
             </button>
             
             <button
               onClick={handleSignUp}
-              disabled={loading}
-              className="w-full bg-transparent border border-gray-700 hover:bg-gray-800 text-white font-medium py-3 rounded-xl transition-all"
+              className="w-full text-gray-300 hover:text-white text-sm transition-colors mt-2"
             >
-              Create New Account
+              Don't have an account? Create one
             </button>
           </div>
         </div>
