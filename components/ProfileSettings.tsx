@@ -46,7 +46,6 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user, onLogout }) => 
                         name="email"
                         defaultValue={user.email}
                         autoComplete="email"
-                        disabled
                         className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 focus:ring-lime-400 focus:border-lime-400 transition disabled:opacity-70"
                     />
                 </div>
