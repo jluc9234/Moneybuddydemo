@@ -1,68 +1,55 @@
-import React, { useState, useEffect } from 'react';
-import Modal from './Modal';
-import { PlaidIcon, RefreshCwIcon } from './icons';
+import React, { useCallback, useEffect, useState } from 'react';
+import { usePlaidLink } from 'react-plaid-link';
+import { supabase } from '../supabaseClient'; 
 
-interface ConnectAccountModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onConnectionSuccess: () => void; // Callback to refresh data in parent
-}
+const ConnectAccountModal = ({ isOpen, onClose, onConnectionSuccess }) => {
+  const [linkToken, setLinkToken] = useState<string | null>(null);
 
-const ConnectAccountModal: React.FC<ConnectAccountModalProps> = ({ isOpen, onClose, onConnectionSuccess }) => {
-    const [isLoading, setIsLoading] = useState(false);
+  // Step 1: Get a link token from your Supabase Edge Function
+  const getLinkToken = async () => {
+    const { data, error } = await supabase.functions.invoke('create-link-token');
+    if (data?.link_token) setLinkToken(data.link_token);
+  };
 
-    const handleSimulatedConnection = () => {
-        setIsLoading(true);
-        // Simulate the time it takes to go through Plaid Link
-        setTimeout(() => {
-            onConnectionSuccess();
-            setIsLoading(false);
-            // Parent component will close the modal on success
-        }, 2000);
-    };
+  useEffect(() => {
+    if (isOpen) getLinkToken();
+  }, [isOpen]);
 
-    // Reset loading state if modal is closed prematurely
-    useEffect(() => {
-        if (!isOpen) {
-            setIsLoading(false);
-        }
-    }, [isOpen]);
+  // Step 2: Handle the successful bank login
+  const onSuccess = useCallback(async (public_token, metadata) => {
+    const { data, error } = await supabase.functions.invoke('plaid-exchange', {
+      body: { public_token, metadata }
+    });
 
-    return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Connect Bank Account">
-            <div className="space-y-4 text-center">
-                
-                <div className="p-4 bg-gray-900/50 rounded-lg">
-                    <p className="text-gray-300">In a real application, this would launch the Plaid Link flow to securely connect your bank accounts.</p>
-                    <p className="text-sm text-gray-400 mt-2">For this demo, clicking below will add a few pre-defined accounts to your profile.</p>
-                </div>
+    if (!error) {
+      onConnectionSuccess(); // Refresh your UI
+      onClose();
+    }
+  }, [onConnectionSuccess, onClose]);
 
-                <div className="pt-4">
-                    <button 
-                        onClick={handleSimulatedConnection} 
-                        disabled={isLoading}
-                        className="w-full bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center space-x-3 disabled:opacity-50 disabled:cursor-wait"
-                    >
-                        {isLoading ? (
-                            <>
-                                <RefreshCwIcon className="w-5 h-5 animate-spin"/>
-                                <span>Connecting...</span>
-                            </>
-                        ) : (
-                             <>
-                                <PlaidIcon className="w-6 h-6"/>
-                                <span>Simulate Connection</span>
-                            </>
-                        )}
-                    </button>
-                </div>
+  const { open, ready } = usePlaidLink({
+    token: linkToken,
+    onSuccess,
+  });
 
-                 <p className="text-xs text-gray-500 pt-2">
-                    Using Plaid for secure bank connections.
-                </p>
-            </div>
-        </Modal>
-    );
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <h2>Connect Your Bank</h2>
+        <p>We use Plaid to securely connect your accounts in Production.</p>
+        <button 
+          onClick={() => open()} 
+          disabled={!ready}
+          className="bg-lime-500 text-black p-3 rounded font-bold"
+        >
+          {ready ? "Launch Plaid Link" : "Loading..."}
+        </button>
+        <button onClick={onClose} className="mt-4 text-gray-400">Cancel</button>
+      </div>
+    </div>
+  );
 };
 
 export default ConnectAccountModal;
