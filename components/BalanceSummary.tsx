@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { PlusCircleIcon } from './icons'; // Added the icon import
 
-export default function BalanceSummary() {
+// Added props interface to accept the click handler
+interface BalanceSummaryProps {
+  onConnectClick: () => void;
+  accounts?: any[]; 
+}
+
+export default function BalanceSummary({ onConnectClick }: BalanceSummaryProps) {
   const [accounts, setAccounts] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -32,7 +39,7 @@ export default function BalanceSummary() {
     }
   }
 
-  // --- RENDERING (Using YOUR Original Styles) ---
+  // --- RENDERING (Preserving your exact styles) ---
   return (
     <div className="p-4 md:p-6 bg-indigo-900/60 backdrop-blur-lg border border-indigo-400/30 rounded-2xl shadow-xl">
       <div className="flex justify-between items-center mb-6">
@@ -70,6 +77,15 @@ export default function BalanceSummary() {
             </div>
           ))
         )}
+
+        {/* --- ADDED CONNECT BUTTON HERE --- */}
+        <button 
+          onClick={onConnectClick} 
+          className="w-full mt-4 flex items-center justify-center p-3 rounded-xl border-2 border-dashed border-indigo-500/30 hover:border-lime-400 text-indigo-300 hover:text-lime-400 transition-all duration-300 hover:bg-indigo-800/30 group"
+        >
+          <PlusCircleIcon className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
+          <span className="font-semibold">Connect New Account</span>
+        </button>
       </div>
     </div>
   );
