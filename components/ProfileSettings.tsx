@@ -1,18 +1,38 @@
 import React from 'react';
 import { User } from '../types';
+import { supabase } from '../supabaseClient'; // Verify this path matches your project structure
 
 interface ProfileSettingsProps {
     user: User;
     onLogout: () => void;
 }
 
-const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user, onLogout }) => {
+const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    const newEmail = formData.get('email') as string;
+    const newName = formData.get('name') as string;
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        // In a real app, you would handle updating user metadata here.
-        alert('Profile updated! (This is a demo)');
-    };
+    try {
+      // 1. Update Authentication (Login Email)
+      const { error: authError } = await supabase.auth.updateUser({ email: newEmail });
+      if (authError) throw authError;
+
+      // 2. Update Profile Data (Database)
+      const { error: dbError } = await supabase
+        .from('profiles')
+        .update({ full_name: newName, email: newEmail })
+        .eq('id', user.id);
+
+      if (dbError) throw dbError;
+
+      alert('Success! Check your new email for a confirmation link.');
+      if (onLogout) onLogout(); // Force logout to refresh session
+      
+    } catch (error: any) {
+      alert('Error: ' + error.message);
+    }
+  };
 
     return (
         <div className="space-y-6 text-white">
